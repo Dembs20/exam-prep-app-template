@@ -1,0 +1,60 @@
+<script>
+// ---------- interactive concept widgets ----------
+const WIDGETS={};
+const SVGNS='http://www.w3.org/2000/svg';
+function el(tag,attrs,txt){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e}
+function fmt(x,d){if(x==null||!isFinite(x))return '–';d=d==null?3:d;return (Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toString()}
+function frac(x){ // small rational display
+ for(let q=1;q<=24;q++){const p=Math.round(x*q);if(Math.abs(p/q-x)<1e-9)return q===1?String(p):p+'/'+q}return fmt(x,3)}
+// symmetric eigen-decomposition (Jacobi)
+function eig(M){const n=M.length;const A=M.map(r=>r.slice());const V=A.map((r,i)=>r.map((_,j)=>i===j?1:0));
+ for(let sweep=0;sweep<100;sweep++){let off=0;for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)off+=A[i][j]*A[i][j];if(off<1e-18)break;
+  for(let p=0;p<n;p++)for(let q=p+1;q<n;q++){if(Math.abs(A[p][q])<1e-14)continue;const th=(A[q][q]-A[p][p])/(2*A[p][q]);const t=Math.sign(th||1)/(Math.abs(th)+Math.sqrt(th*th+1));const c=1/Math.sqrt(t*t+1),s=t*c;
+   for(let k=0;k<n;k++){const akp=A[k][p],akq=A[k][q];A[k][p]=c*akp-s*akq;A[k][q]=s*akp+c*akq}
+   for(let k=0;k<n;k++){const apk=A[p][k],aqk=A[q][k];A[p][k]=c*apk-s*aqk;A[q][k]=s*apk+c*aqk}
+   for(let k=0;k<n;k++){const vkp=V[k][p],vkq=V[k][q];V[k][p]=c*vkp-s*vkq;V[k][q]=s*vkp+c*vkq}}}
+ const idx=A.map((_,i)=>i).sort((a,b)=>A[b][b]-A[a][a]);return{val:idx.map(i=>A[i][i]),vec:idx.map(i=>V.map(r=>r[i]))}}
+
+// ---------- LaTeX rendering helpers for the labs ----------
+const IXDRAW=window.IXDRAW=[];
+function mjOK(){return !!(window.__mjReady&&window.MathJax&&MathJax.tex2svg)}
+function tex1(t){ // one inline formula -> HTML
+ if(!mjOK())return '<span class="texpending">'+t.replace(/</g,'&lt;')+'</span>';
+ try{return MathJax.tex2svg(t,{display:false}).outerHTML}catch(e){return '<span class="texpending">'+t+'</span>'}}
+function texHTML(html){return html.replace(/\\\(([\s\S]+?)\\\)/g,(m,t)=>tex1(t))}
+function setMath(node,html){node.innerHTML=texHTML(html)}
+function reg(box,fn){IXDRAW.push(function f(){if(!box.isConnected){const i=IXDRAW.indexOf(f);if(i>=0)IXDRAW.splice(i,1);return}fn()})}
+// TeX label inside an SVG (x,y = anchor point on the baseline)
+function svgTex(svg,t,x,y,o){o=o||{};const fs=o.fs||11,anchor=o.anchor||'middle',col=o.color||'var(--muted)';
+ if(!mjOK()){const e=el('text',{x,y,'text-anchor':anchor,'font-size':fs,fill:col},o.fallback||t.replace(/\\[a-zA-Z]+|[{}^_]/g,''));if(o.rot)e.setAttribute('transform','rotate('+o.rot+' '+x+' '+y+')');svg.appendChild(e);return}
+ let inner;try{inner=MathJax.tex2svg(t,{display:false}).querySelector('svg')}catch(e){return}
+ const ex=fs*0.52;const w=parseFloat(inner.getAttribute('width'))*ex,h=parseFloat(inner.getAttribute('height'))*ex;
+ const va=(inner.style.verticalAlign||'0ex');const depth=-parseFloat(va)*ex;
+ let X=anchor==='middle'?x-w/2:anchor==='end'?x-w:x;const Y=y-(h-depth);
+ inner.setAttribute('width',w);inner.setAttribute('height',h);inner.setAttribute('x',X);inner.setAttribute('y',Y);inner.removeAttribute('style');inner.setAttribute('style','color:'+col+';overflow:visible');
+ if(o.rot){const g=el('g',{transform:'rotate('+o.rot+' '+x+' '+y+')'});g.appendChild(inner);svg.appendChild(g)}else svg.appendChild(inner)}
+// numbers as LaTeX
+function tnum(x,d){if(x==null||!isFinite(x))return '\\infty';if(Math.abs(x)<1e-9)x=0;return fmt(x,d)}
+function tfr(x){if(x==null||!isFinite(x))return '\\infty';if(Math.abs(x)<1e-9)x=0;const s=x<0?'-':'';const a=Math.abs(x);for(let q=1;q<=48;q++){const p=Math.round(a*q);if(Math.abs(p/q-a)<1e-9)return q===1?s+p:s+'\\tfrac{'+p+'}{'+q+'}'}return fmt(x,3)}
+function tvec(v,d){return '('+v.map(x=>fmt(Math.abs(x)<5e-10?0:x,d)).join(',\\,')+')'}
+function line(k,html){return '<div class="ixline">'+(k?'<span class="ixk">'+k+'</span>':'')+html+'</div>'}
+function rafd(fn){let q=false;return function(){if(q)return;q=true;requestAnimationFrame(()=>{q=false;fn()})}}
+function binom(n,k){if(k<0||k>n)return 0;let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return Math.round(r)}
+
+
+// static control labels: convert \( \) text once (and again when MathJax becomes ready)
+function ctrlTex(box){box.querySelectorAll('[data-tex]').forEach(sp=>{sp.innerHTML=texHTML(sp.dataset.tex)})}
+function T(t){return '<span data-tex="'+t.replace(/"/g,'&quot;')+'"></span>'}
+
+// ---------- plot helper with TeX labels ----------
+function plot(svg,W,H,pad,xs,ys,opts){svg.innerHTML='';svg.setAttribute('viewBox','0 0 '+W+' '+H);const o=opts||{};
+ const xmin=o.xmin!=null?o.xmin:Math.min(...xs),xmax=o.xmax!=null?o.xmax:Math.max(...xs),ymin=o.ymin!=null?o.ymin:0,ymax=o.ymax!=null?o.ymax:Math.max(...ys.flat())*1.05||1;
+ const X=x=>pad.l+(x-xmin)/(xmax-xmin||1)*(W-pad.l-pad.r),Y=y=>H-pad.b-(y-ymin)/(ymax-ymin||1)*(H-pad.t-pad.b);
+ svg.appendChild(el('line',{x1:pad.l,y1:H-pad.b,x2:W-pad.r,y2:H-pad.b,stroke:'var(--muted)'}));svg.appendChild(el('line',{x1:pad.l,y1:pad.t,x2:pad.l,y2:H-pad.b,stroke:'var(--muted)'}));
+ if(o.xlabel)svgTex(svg,o.xlabel,(pad.l+W-pad.r)/2,H-4,{fs:13});
+ if(o.ylabel)svgTex(svg,o.ylabel,15,(pad.t+H-pad.b)/2,{fs:13,rot:-90});
+ (o.xticks||[]).forEach(t=>{svg.appendChild(el('line',{x1:X(t[0]),y1:H-pad.b,x2:X(t[0]),y2:H-pad.b+3,stroke:'var(--muted)'}));svgTex(svg,t[1],X(t[0]),H-pad.b+16,{fs:12})});
+ (o.yticks||[]).forEach(t=>{svgTex(svg,t[1],pad.l-5,Y(t[0])+4,{fs:12,anchor:'end'})});
+ ys.forEach((yy,k)=>{const col=(o.colors||['var(--accent)','var(--hw)','var(--exam)'])[k%3];if(o.bars){const bw=(W-pad.l-pad.r)/xs.length*0.8;xs.forEach((x,i)=>svg.appendChild(el('rect',{x:X(x)-bw/2,y:Y(yy[i]),width:bw,height:H-pad.b-Y(yy[i]),fill:col,opacity:.8})))}else{let d='';xs.forEach((x,i)=>{if(!isFinite(yy[i]))return;d+=(d?'L':'M')+X(x).toFixed(1)+','+Y(Math.max(ymin,Math.min(ymax,yy[i]))).toFixed(1)});svg.appendChild(el('path',{d,fill:'none',stroke:col,'stroke-width':2}))}});
+ return{X,Y}}
+</script>

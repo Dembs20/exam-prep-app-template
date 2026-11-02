@@ -1,0 +1,81 @@
+{
+  "title": "Network Science Prep",
+  "subtitle": "EE4C06 · TU Delft · Van Mieghem",
+  "storageKey": "nsprep",
+  "standaloneName": "Network_Science_Exam_Prep.html",
+  "logoSvg": "<svg viewBox=\"0 0 100 100\" aria-hidden=\"true\"><g stroke=\"currentColor\" stroke-width=\"3\" fill=\"none\"><path d=\"M50 14 L22 36 L34 70 L66 70 L78 36 Z\"/><path d=\"M50 14 L34 70 M50 14 L66 70 M22 36 L78 36 M22 36 L66 70\"/></g><g fill=\"var(--accent)\"><circle cx=\"50\" cy=\"14\" r=\"7\"/><circle cx=\"22\" cy=\"36\" r=\"7\"/><circle cx=\"78\" cy=\"36\" r=\"7\"/><circle cx=\"34\" cy=\"70\" r=\"7\"/><circle cx=\"66\" cy=\"70\" r=\"7\"/></g></svg>",
+  "content": [
+    "figures.js",
+    "lectures-1-2.js",
+    "lectures-3-4.js",
+    "lectures-5-6.js",
+    "questions.js",
+    "widgets.js",
+    "figexpl.js",
+    "summaries.js"
+  ],
+  "defSearchHint": "Filter terms, e.g. Laplacian, betweenness, Foster",
+  "askedFilter": "Asked in exam prep or homework only",
+  "sources": {
+    "exam": {
+      "cover": "Exam prep set",
+      "from": "from the exam-prep set",
+      "filter": "Exam prep set only",
+      "bank": "Exam preparation set",
+      "bankCount": true,
+      "asked": true
+    },
+    "hw": {
+      "cover": "Homework 1 & 2",
+      "from": "from homework",
+      "bank": "Homework 1, exercise session 1 and homework 2",
+      "asked": true
+    },
+    "lec": {
+      "cover": "Lecture checks",
+      "bank": "Lecture concept checks"
+    },
+    "rec": {
+      "filter": "Stressed in the lecture recordings",
+      "bank": "Points stressed in the lecture recordings"
+    }
+  },
+  "aliases": {
+    "completebipartitegraph": "completebipartite",
+    "graphical": "graphicalsequence",
+    "powerlawdegreedistribution": "powerlawscalefree",
+    "clusteringcoefficientofanode": "clusteringcoefficientcgv",
+    "clusteringcoefficientofthegraph": "clusteringcoefficientcgv",
+    "walk": "walkpath",
+    "connected": "connectedgraph",
+    "newmansmodularity": "modularity",
+    "kcore": "corecoreness",
+    "eigenvector": "eigenvalueeigenvector",
+    "isomorphic": "isomorphicgraphs",
+    "erdsrnyirandomgraph": "erdsrnyigraph",
+    "wattsstrogatzsmallworldgraph": "wattsstrogatzgraph",
+    "barabsialbertscalefreegraph": "barabsialbertgraph",
+    "wignerssemicirclelaw": "wignersemicirclelaw",
+    "scalefree": "powerlawscalefree",
+    "linearprocess": "linearprocessonagraph"
+  },
+  "defSections": {
+    "interlacingtheorem": "l3s2",
+    "complementlaplacian": "l3s5",
+    "degreein": "l4s2",
+    "ultrasmallworld": "l4s5",
+    "smallworldproperty": "l4s4",
+    "referencegroundnode": "l5s2",
+    "seriesparallel": "l5s4",
+    "closenessvs": "l6s2",
+    "powerdissipation": "l6s3",
+    "laplacetransformedlaplacian": "l6s4",
+    "ringeigenvalues": "l6s5",
+    "pathresistance": "l6s5",
+    "simplexofagraph": "l6s6",
+    "zetavector": "l6s1",
+    "laplacianeigenvalues": "l3s5",
+    "spectraldensity": "l4s2",
+    "commutetime": "l5s5"
+  }
+}

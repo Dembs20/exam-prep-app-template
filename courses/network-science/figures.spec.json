@@ -1,0 +1,773 @@
+{
+ "_note": "Crop spec for the figures of this course (TU Delft handout PDFs, two slides per page). figures.js was produced with an earlier version of the cropper; regenerating with this spec gives equivalent but not byte-identical crops. Always check the previews.",
+ "dpi": 140,
+ "maxWidth": 960,
+ "quality": 82,
+ "pdfs": {
+  "n1": "slides/NetSci1_introduction.pdf",
+  "n2": "slides/NetSci2_metrics.pdf",
+  "n3": "slides/NetSci3_spectrum.pdf",
+  "n4": "slides/NetSci4_graph_models.pdf",
+  "n5": "slides/NetSci5_Electrical_Networks1.pdf",
+  "n6": "slides/NetSci6_Electrical_Networks2.pdf",
+  "hw": "slides/Homework_2.pdf"
+ },
+ "layouts": {
+  "slide-top": [
+   0.16,
+   0.135,
+   0.87,
+   0.512
+  ],
+  "slide-bottom": [
+   0.16,
+   0.528,
+   0.87,
+   0.89
+  ]
+ },
+ "figures": {
+  "l1_konigsberg": {
+   "pdf": "n1",
+   "page": 13,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l1_inc": {
+   "pdf": "n1",
+   "page": 16,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l1_lap": {
+   "pdf": "n1",
+   "page": 16,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l1_classes": {
+   "pdf": "n1",
+   "page": 17,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l1_linegraph": {
+   "pdf": "n1",
+   "page": 19,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l1_interdep": {
+   "pdf": "n1",
+   "page": 22,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l2_airline": {
+   "pdf": "n2",
+   "page": 5,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l2_havel": {
+   "pdf": "n2",
+   "page": 6,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l2_cluster": {
+   "pdf": "n2",
+   "page": 9,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l2_diam": {
+   "pdf": "n2",
+   "page": 14,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l2_betwtab": {
+   "pdf": "n2",
+   "page": 17,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l2_menger": {
+   "pdf": "n2",
+   "page": 19,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l2_dpr": {
+   "pdf": "n2",
+   "page": 22,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l2_modularity": {
+   "pdf": "n2",
+   "page": 24,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l2_kcore": {
+   "pdf": "n2",
+   "page": 32,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l3_specdec": {
+   "pdf": "n3",
+   "page": 4,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l3_bipartite": {
+   "pdf": "n3",
+   "page": 9,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l3_basic": {
+   "pdf": "n3",
+   "page": 13,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l3_bounds": {
+   "pdf": "n3",
+   "page": 15,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l3_conn": {
+   "pdf": "n3",
+   "page": 19,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l3_fiedler": {
+   "pdf": "n3",
+   "page": 22,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l4_models": {
+   "pdf": "n4",
+   "page": 2,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l4_phase": {
+   "pdf": "n4",
+   "page": 6,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l4_wigner": {
+   "pdf": "n4",
+   "page": 10,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l4_rgg2": {
+   "pdf": "n4",
+   "page": 13,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l4_hyp": {
+   "pdf": "n4",
+   "page": 20,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l4_ws": {
+   "pdf": "n4",
+   "page": 23,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l4_tau": {
+   "pdf": "n4",
+   "page": 27,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l4_markov": {
+   "pdf": "n4",
+   "page": 42,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l5_linear": {
+   "pdf": "n5",
+   "page": 2,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l5_example": {
+   "pdf": "n5",
+   "page": 6,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l5_qdag": {
+   "pdf": "n5",
+   "page": 14,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l5_w14": {
+   "pdf": "n5",
+   "page": 15,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l5_star": {
+   "pdf": "n5",
+   "page": 15,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l6_spreader": {
+   "pdf": "n6",
+   "page": 2,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l6_power": {
+   "pdf": "n6",
+   "page": 5,
+   "region": "slide-top",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l6_impnet": {
+   "pdf": "n6",
+   "page": 8,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "l6_simplex": {
+   "pdf": "n6",
+   "page": 12,
+   "region": "slide-bottom",
+   "whiten": {
+    "color": "#0099cc",
+    "tol": 90,
+    "below": 0.7
+   },
+   "frame": true,
+   "blank": [
+    [
+     0.72,
+     0.87,
+     1,
+     1
+    ]
+   ]
+  },
+  "hw_six": {
+   "pdf": "hw",
+   "page": 3,
+   "region": [
+    0.08,
+    0.11,
+    0.92,
+    0.72
+   ]
+  },
+  "hw_circuit": {
+   "pdf": "hw",
+   "page": 4,
+   "region": [
+    0.34,
+    0.17,
+    0.72,
+    0.395
+   ]
+  }
+ }
+}

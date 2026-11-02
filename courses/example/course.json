@@ -1,0 +1,18 @@
+{
+  "title": "Example Course Prep",
+  "subtitle": "EX101 · Example University · Template demo",
+  "storageKey": "ex101",
+  "standaloneName": "Example_Course_Exam_Prep.html",
+  "logoSvg": "<svg viewBox=\"0 0 100 100\" aria-hidden=\"true\"><path d=\"M8 50 C 22 8, 36 8, 50 50 S 78 92, 92 50\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"5\"/><g fill=\"var(--accent)\"><circle cx=\"8\" cy=\"50\" r=\"7\"/><circle cx=\"29\" cy=\"18\" r=\"7\"/><circle cx=\"50\" cy=\"50\" r=\"7\"/><circle cx=\"71\" cy=\"82\" r=\"7\"/><circle cx=\"92\" cy=\"50\" r=\"7\"/></g></svg>",
+  "content": ["figures.js", "lectures.js", "questions.js", "widgets.js", "figexpl.js", "summaries.js"],
+  "defSearchHint": "Filter terms, e.g. aliasing, power",
+  "askedFilter": "Asked in exams or homework only",
+  "sources": {
+    "exam": {"cover": "Exam questions", "from": "from past exams", "filter": "Exam questions only", "bank": "Past exam questions", "bankCount": true, "asked": true},
+    "hw": {"cover": "Homework", "from": "from homework", "bank": "Homework and exercise sessions", "asked": true},
+    "lec": {"cover": "Lecture checks", "bank": "Lecture concept checks"},
+    "rec": {"filter": "Stressed in the lecture recordings", "bank": "Points stressed in the lecture recordings"}
+  },
+  "aliases": {"nyquisttheorem": "nyquistshannonsamplingtheorem"},
+  "defSections": {}
+}

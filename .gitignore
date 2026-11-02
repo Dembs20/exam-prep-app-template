@@ -1,0 +1,7 @@
+dist/
+tools/vendor/
+shots/
+prev/
+__pycache__/
+*.wav
+*.tmp.wav

@@ -1,0 +1,7 @@
+# One Collegerama (Mediasite) player link per line. Lines starting with # are ignored.
+# Lectures that are already in the audio folder are skipped, so you can keep old links here.
+#
+# How to make a player link: take the code after /presentation/ in the portal link
+# (up to the ?) and put it after https://collegerama.tudelft.nl/Mediasite/Play/
+#
+# https://collegerama.tudelft.nl/Mediasite/Play/<code>

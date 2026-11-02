@@ -1,0 +1,217 @@
+<script>
+(function(){
+const KEY=COURSE.storageKey+'-progress-v1';const L0=LECTURES[0].id;
+const SOURCES=COURSE.sources;const asked=q=>!!(SOURCES[q.src[0].k]&&SOURCES[q.src[0].k].asked);const qsec=q=>q.sec||'';
+let S=load();migrate();
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&typeof o==='object')return Object.assign({read:{},quiz:{},lastLec:L0},o)}}catch(e){}return{read:{},quiz:{},lastLec:L0}}
+function migrate(){S.sstat=S.sstat||{};S.lstat=S.lstat||{};if(S.read){Object.keys(S.read).forEach(k=>{if(S.read[k]&&!S.sstat[k])S.sstat[k]='understood'});S.read={}}}
+const ORDER=['unread','read','understood'];
+function sst(id){return S.sstat[id]||'unread'}
+function lst(l){const e=S.lstat[l.id];if(e)return e;const st=l.sections.map(x=>sst(x.id));if(st.every(x=>x==='understood'))return'understood';if(st.every(x=>x!=='unread'))return'read';return'unread'}
+function setSec(id,v){if(v==='unread')delete S.sstat[id];else S.sstat[id]=v;const l=LECTURES.find(x=>x.sections.some(y=>y.id===id));if(l)delete S.lstat[l.id];save()}
+function setLec(l,v){S.lstat[l.id]=v;l.sections.forEach(x=>{if(v==='understood')S.sstat[x.id]='understood';else if(v==='read'){if(sst(x.id)!=='read')S.sstat[x.id]='read'}else delete S.sstat[x.id]});save()}
+function cyc(v){return ORDER[(ORDER.indexOf(v)+1)%3]}
+function dot(v,attrs){return '<span class="dot '+v+'" '+(attrs||'')+' title="'+v+' · click to change"></span>'}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const view=document.getElementById('view');
+MARKS.init(()=>S,save);window.NS_CURRENT_LECTURE=()=>(location.hash==='#lectures'?(byId[S.lastLec]||LECTURES[0]):null);
+const byId={};LECTURES.forEach(l=>byId[l.id]=l);
+const Q=QUESTIONS;const qById={};Q.forEach(q=>qById[q.id]=q);
+
+const norm=s=>s.replace(/\\\(.*?\\\)/g,'').replace(/<[^>]+>/g,'').toLowerCase().replace(/[^a-z]/g,'');
+const ALIAS=COURSE.aliases||{};
+const DEFS={};LECTURES.forEach(l=>l.defs.forEach(d=>{DEFS[norm(d.t)]={d,lec:l}}));
+function lookupDef(txt){let k=norm(txt);if(DEFS[k])return DEFS[k];if(ALIAS[k]&&DEFS[ALIAS[k]])return DEFS[ALIAS[k]];const f=Object.keys(DEFS).find(x=>x.startsWith(k)||k.startsWith(x));return f?DEFS[f]:null}
+LECTURES.forEach(l=>l.sections.forEach(sec=>{[...sec.body.matchAll(/<dfn>(.*?)<\/dfn>/g)].forEach(m=>{const e=lookupDef(m[1]);if(e&&!e.sec){e.sec=sec.id;e.anchor='dfn-'+norm(m[1])}})}));
+const DEFSEC=COURSE.defSections||{};
+Object.entries(DEFS).forEach(([k,e])=>{if(DEFSEC[k]){e.sec=DEFSEC[k];e.anchor=e.sec}});
+Object.values(DEFS).forEach(e=>{if(e.sec)return;const tt=e.d.t.replace(/\\\(.*?\\\)/g,'').replace(/[’'].*$/,'').trim().toLowerCase().split(/\s+/).slice(0,2).join(' ');const secs=[...e.lec.sections,...LECTURES.flatMap(l=>l.sections)];const f=secs.find(sec=>sec.body.replace(/<[^>]+>/g,'').toLowerCase().includes(tt));e.sec=(f||e.lec.sections[0]).id;e.anchor=e.sec});
+function secTitle(id){for(const l of LECTURES){const s=l.sections.find(x=>x.id===id);if(s)return{l,s}}return null}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+const MIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+function enrich(html){return html.replace(/<voice r="(\d+)" t="([^"]+)"( hint)?>([\s\S]*?)<\/voice>/g,(m,r,t,hint,body)=>'<div class="voice'+(hint?' hint':'')+'"><div class="vlab">'+MIC+(hint?'Exam tip from class':'In class')+' · recording '+r+', '+t+'</div>'+body+'</div>').replace(/<fig id="([^"]+)" src="([^"]+)">([\s\S]*?)<\/fig>/g,(m,id,src,cap)=>FIGS[id]?'<figure class="slide" data-fig="'+id+'" data-src="'+esc(src)+'" tabindex="0" title="Click to enlarge and explain"><img src="'+FIGS[id]+'" alt="'+esc(cap)+'" loading="lazy"><figcaption><span class="srctag">'+esc(src)+'</span>'+cap+'<span class="figmore">⤢ explain</span></figcaption></figure>':'')
+ .replace(/<dfn>(.*?)<\/dfn>/g,(m,t)=>'<dfn class="term" id="dfn-'+norm(t)+'" data-term="'+esc(t)+'" tabindex="0">'+t+'</dfn>')
+ .replace(/<ix id="([^"]+)" title="([^"]+)"><\/ix>/g,(m,id,t)=>'<div class="ixbox" data-ix="'+id+'"><div class="ixtitle">'+esc(t)+'</div><div class="ixbody"></div></div>')}
+function mountWidgets(root){root.querySelectorAll('.ixbox[data-ix]').forEach(b=>{const w=WIDGETS[b.dataset.ix];if(w&&!b.dataset.mounted){b.dataset.mounted='1';try{w(b.querySelector('.ixbody'))}catch(e){b.querySelector('.ixbody').innerHTML='<p class="hint">Widget failed to load.</p>'}}})}
+function typeset(el){if(window.MathJax&&MathJax.typesetPromise&&window.__mjReady)return MathJax.typesetPromise([el]).catch(()=>{});return Promise.resolve()}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+function pct(a,b){return b?Math.round(100*a/b):0}
+function status(q){const s=S.quiz[q.id];if(!s)return'none';return s.last==='ok'?'ok':'bad'}
+function lecStats(l){const qs=Q.filter(q=>q.lec===l.id);const rd=l.sections.filter(s=>sst(s.id)==='understood').length;const rd2=l.sections.filter(s=>sst(s.id)!=='unread').length;const ok=qs.filter(q=>status(q)==='ok').length;const tried=qs.filter(q=>S.quiz[q.id]).length;return{secs:l.sections.length,rd,rd2,lstat:lst(l),nq:qs.length,ok,tried,pct:pct(rd+ok,l.sections.length+qs.length)}}
+function tags(q){return '<span class="srcs">'+q.src.map(s=>'<span class="tag '+s.k+'">'+esc(s.r)+'</span>').join('')+'</span>'}
+function statusTag(q){const s=status(q);const st=S.quiz[q.id];return s==='ok'?'<span class="tag ok">correct ('+st.correct+'/'+st.attempts+')</span>':s==='bad'?'<span class="tag bad">missed ('+st.correct+'/'+st.attempts+')</span>':'<span class="tag none">not tried</span>'}
+
+
+function flash(el){el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),2200)}
+function jumpTo(anchor,secId){const st=secTitle(secId);if(!st)return;closeTerm();const go=()=>{const el=document.getElementById(anchor)||document.getElementById(secId);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});flash(el)}};
+ if(location.hash!=='#lectures'){location.hash='#lectures';setTimeout(()=>{renderLecture(st.l);setTimeout(go,150)},50)}else if(S.lastLec!==st.l.id){renderLecture(st.l);setTimeout(go,150)}else go()}
+
+function openFig(fig){const id=fig.dataset.fig;const cap=fig.querySelector('figcaption');const ex=(typeof FIGEXPL!=='undefined'&&FIGEXPL[id])||'<p class="hint">No explanation written for this figure yet.</p>';
+ const ov=document.createElement('div');ov.className='lightbox';ov.innerHTML='<div class="lbbox" role="dialog" aria-label="Figure"><button class="btn small lbclose" title="Close">✕</button><div class="lbimg"><img src="'+FIGS[id]+'" alt=""></div><div class="lbtext"><div class="eyebrow">'+esc(fig.dataset.src)+'</div><p class="lbcap">'+(cap?cap.innerHTML.replace(/<span class="srctag">.*?<\/span>/,'').replace(/<span class="figmore">.*?<\/span>/,''):'')+'</p><h4>How to read it</h4>'+ex+'</div></div>';
+ document.body.appendChild(ov);document.body.style.overflow='hidden';typeset(ov);
+ const close=()=>{ov.remove();document.body.style.overflow=''};ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('.lbclose'))close()});
+ document.addEventListener('keydown',function k(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',k)}})}
+let termPop=null;function closeTerm(){if(termPop){termPop.remove();termPop=null}}
+function openTerm(dfn){closeTerm();const e=lookupDef(dfn.dataset.term);termPop=document.createElement('div');termPop.className='notepop termpop';
+ termPop.innerHTML=e?'<div class="eyebrow">Definition · L'+e.lec.num+'</div><div class="termt">'+e.d.t+'</div><div>'+e.d.d+'</div><div class="row" style="margin-top:8px">'+(e.sec?'<a href="#lectures" class="btn small primary" data-jumpdef="'+e.anchor+'" data-sec="'+e.sec+'">Go to where it is introduced</a>':'')+'<a href="#definitions" class="btn small ghost">All definitions</a></div>':'<div class="eyebrow">Term</div><div class="termt">'+esc(dfn.dataset.term)+'</div><p class="hint">No separate definition entry; this sentence is where the term is explained.</p>';
+ document.body.appendChild(termPop);const r=dfn.getBoundingClientRect();termPop.style.left=Math.max(8,Math.min(window.innerWidth-termPop.offsetWidth-8,r.left+window.scrollX))+'px';termPop.style.top=(r.bottom+window.scrollY+8)+'px';typeset(termPop)}
+document.addEventListener('click',e=>{if(termPop&&!termPop.contains(e.target)&&!e.target.closest('dfn.term'))closeTerm()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTerm();if(e.key==='Enter'&&e.target.matches&&e.target.matches('figure.slide[data-fig]'))openFig(e.target);if(e.key==='Enter'&&e.target.matches&&e.target.matches('dfn.term'))openTerm(e.target)});
+
+const NAV={st:[],i:-1,applying:false};
+function navState(){return{h:(location.hash||'#dashboard'),lec:S.lastLec}}
+function navPush(){if(NAV.applying)return;const st=navState();const cur=NAV.st[NAV.i];if(cur&&cur.h===st.h&&cur.lec===st.lec)return;NAV.st=NAV.st.slice(0,NAV.i+1);NAV.st.push(st);NAV.i=NAV.st.length-1;navButtons()}
+function navApply(st){NAV.applying=true;S.lastLec=st.lec;save();if((location.hash||'#dashboard')!==st.h){location.hash=st.h;setTimeout(()=>{NAV.applying=false;navButtons()},80)}else{if(st.h==='#lectures')renderLecture(byId[st.lec],{silent:true});NAV.applying=false;navButtons()}window.scrollTo({top:0})}
+function navBack(){if(NAV.i>0){NAV.i--;navApply(NAV.st[NAV.i])}}
+function navFwd(){if(NAV.i<NAV.st.length-1){NAV.i++;navApply(NAV.st[NAV.i])}}
+function navButtons(){const b=document.getElementById('navback'),f=document.getElementById('navfwd');if(b)b.disabled=NAV.i<=0;if(f)f.disabled=NAV.i>=NAV.st.length-1}
+(function(){const wrap=document.createElement('div');wrap.className='navfabs';wrap.innerHTML='<button id="navback" class="fab mini" title="Back" disabled>&#8592;</button><button id="navfwd" class="fab mini" title="Forward" disabled>&#8594;</button>';document.body.appendChild(wrap);wrap.addEventListener('click',e=>{if(e.target.id==='navback')navBack();if(e.target.id==='navfwd')navFwd()})})();
+// ---------- routing ----------
+const VIEWS={dashboard,lectures,definitions,quiz,exam};
+function route(){let h=(location.hash||'#dashboard').slice(1);if(!VIEWS[h])h='dashboard';document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===h));VIEWS[h]();navPush();typeset(view);window.scrollTo({top:0})}
+window.addEventListener('hashchange',route);
+
+// ---------- dashboard ----------
+function ring(p){const r=40,c=2*Math.PI*r;return '<svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="'+r+'" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="50" cy="50" r="'+r+'" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+(c*p/100).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 50 50)"/><text x="50" y="55" text-anchor="middle" font-size="22" font-family="IBM Plex Mono,monospace" fill="var(--ink)">'+p+'%</text></svg>'}
+function dashboard(){
+ const totSec=LECTURES.reduce((a,l)=>a+l.sections.length,0),rdSec=LECTURES.reduce((a,l)=>a+l.sections.filter(s=>sst(s.id)==='understood').length,0);
+ const ok=Q.filter(q=>status(q)==='ok').length,tried=Q.filter(q=>S.quiz[q.id]).length,bad=Q.filter(q=>status(q)==='bad').length;
+ const overall=pct(rdSec+ok,totSec+Q.length);
+ const cover=Object.entries(SOURCES).filter(([k,s])=>s.cover).map(([k,s])=>[k,s.cover]).map(([k,n])=>{const qs=Q.filter(q=>q.src.some(s=>s.k===k));const m=qs.filter(q=>status(q)==='ok').length;return '<div class="cover"><span class="tag '+k+'">'+n+'</span><div class="bar"><i style="width:'+pct(m,qs.length)+'%"></i></div><span class="num">'+m+'/'+qs.length+'</span></div>'}).join('');
+ const weak=Q.filter(q=>status(q)==='bad').slice(0,8).map(q=>'<a href="#quiz" data-practice="'+q.id+'"><span class="tag bad">'+esc(q.src[0].r)+'</span><span>'+shortQ(q)+'</span></a>').join('')||'<p class="hint">Nothing missed yet. Questions you answer wrong will collect here.</p>';
+ const last=byId[S.lastLec]||LECTURES[0];const nextSec=last.sections.find(s=>sst(s.id)!=='understood');
+ view.innerHTML='<div class="eyebrow">Progress</div><h2>Where you stand</h2><p class="lead">'+numWord(LECTURES.length)+' lectures, '+totSec+' sections, '+Q.length+' questions ('+Object.entries(SOURCES).filter(([k,s])=>s.from).map(([k,s])=>Q.filter(q=>q.src[0].k===k).length+' '+s.from).join(', ')+'). Progress is saved in this browser.</p>'
+ +'<div class="grid g2">'
+ +'<div class="panel"><div class="stat">'+ring(overall)+'<div><div class="eyebrow">Overall</div><div style="font-size:1.4rem;font-weight:600">'+overall+'% complete</div><div class="hint num">'+rdSec+'/'+totSec+' sections understood · '+ok+'/'+Q.length+' questions mastered · '+bad+' to revisit</div><div class="pill-row"><a class="btn primary small" href="#lectures" data-golec="'+last.id+'">Continue: L'+last.num+(nextSec?' · '+esc(nextSec.title):'')+'</a><a class="btn small" href="#quiz">Quiz me</a></div></div></div></div>'
+ +'<div class="panel"><div class="eyebrow">Exam coverage</div><p class="hint">Mastered = answered correctly on the latest attempt.</p>'+cover+'</div></div>'
+ +'<div class="grid g2" style="margin-top:14px"><div class="panel"><div class="eyebrow">Lectures</div>'+LECTURES.map(l=>{const s=lecStats(l);return '<div class="lecrow"><div><a href="#lectures" data-golec="'+l.id+'">'+l.num+'. '+esc(l.title)+'</a><div class="bars"><div class="barline"><span>Reading</span><div class="bar"><i style="width:'+pct(s.rd,s.secs)+'%"></i></div><span class="num">'+s.rd+'/'+s.secs+'</span></div><div class="barline"><span>Quiz</span><div class="bar"><i class="b2" style="width:'+pct(s.ok,s.nq)+'%"></i></div><span class="num">'+s.ok+'/'+s.nq+'</span></div></div></div><span class="num" style="font-weight:600">'+s.pct+'%</span></div>'}).join('')+'</div>'
+ +'<div><div class="panel"><div class="eyebrow">To revisit</div><div class="weak" style="margin-top:8px">'+weak+'</div></div>'
+ +'<div class="panel" style="margin-top:14px"><div class="eyebrow">Your progress data</div><p class="hint">Saved only in this browser. Copy the text to keep a backup or move it to another device; paste and load to restore.</p><div class="pill-row"><button class="btn small" data-act="export">Show / copy</button><button class="btn small" data-act="import">Paste &amp; load</button><button class="btn small ghost" data-act="reset">Reset all</button></div><div id="io"></div></div></div></div>';
+}
+function numWord(n){const w=['No','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve'];return w[n]||String(n)}
+function shortQ(q){const t=q.q.replace(/\\\(.*?\\\)/g,'…').replace(/<[^>]+>/g,'');return esc(t.length>70?t.slice(0,70)+'…':t)}
+
+// ---------- lectures ----------
+function sidebar(cur){const el=document.querySelector('.leclist');if(!el)return;
+ el.innerHTML=LECTURES.map(x=>{const st=lecStats(x);const on=x.id===cur.id;return '<div class="lecitem'+(on?' on':'')+'"><button data-lec="'+x.id+'">'+dot(st.lstat,'data-ldot="'+x.id+'"')+'<span class="t">'+x.num+'. '+esc(x.short)+'</span><span class="hint num">'+st.rd2+'/'+st.secs+' read · '+st.rd+'/'+st.secs+' understood · '+st.ok+'/'+st.nq+' quiz</span><div class="bar"><i style="width:'+st.pct+'%"></i></div></button>'
+  +(on?'<div class="seclist">'+x.sections.map((sec,i)=>'<a href="#lectures" data-jump="'+sec.id+'">'+dot(sst(sec.id),'data-sdot="'+sec.id+'"')+'<span>'+(i+1)+'. '+esc(sec.title)+'</span></a>').join('')+'</div>':'')+'</div>'}).join('')}
+function refreshStatus(){const l=byId[S.lastLec]||LECTURES[0];sidebar(l);const st=lecStats(l);
+ document.querySelectorAll('[data-secdot]').forEach(d=>{d.className='dot '+sst(d.dataset.secdot)});
+ const lb=document.getElementById('lecstat');if(lb){const v=lst(l);lb.className='btn lecstat '+v;lb.innerHTML=dot(v)+' Lecture: '+v+' · click to change'}
+ const bar=document.getElementById('lecbar');if(bar)bar.style.width=st.pct+'%';const eb=document.getElementById('leceye');if(eb)eb.textContent='Lecture '+l.num+' · '+st.rd2+'/'+st.secs+' read · '+st.rd+'/'+st.secs+' understood · '+st.ok+'/'+st.nq+' questions mastered';
+ const nav=document.querySelector('.secnav');if(nav)nav.querySelectorAll('[data-navdot]').forEach(d=>{d.className='dot '+sst(d.dataset.navdot)})}
+function lectures(){
+ const l=byId[S.lastLec]||LECTURES[0];
+ view.innerHTML='<div class="lec-layout"><aside class="leclist"></aside><article id="lec"></article></div>';
+ renderLecture(l);
+}
+let secObs=null,rafId=null;
+function checkRead(){const art=document.getElementById('lec');if(!art)return;let ch=false;art.querySelectorAll('.secend').forEach(x=>{const id=x.dataset.secend;if(sst(id)==='unread'&&x.getBoundingClientRect().top<window.innerHeight-40){setSec(id,'read');ch=true}});if(ch)refreshStatus()}
+window.addEventListener('scroll',()=>{if(rafId)return;rafId=requestAnimationFrame(()=>{rafId=null;if(location.hash==='#lectures')checkRead()})},{passive:true});
+function renderLecture(l,opts){
+ opts=opts||{};if(S.lastLec!==l.id||opts.push){S.lastLec=l.id;if(!opts.silent)navPush()}save();
+ const s=lecStats(l);const nq=Q.filter(q=>q.lec===l.id);const askedQ=nq.filter(asked);
+ const art=document.getElementById('lec');if(!art)return;
+ art.innerHTML='<div class="eyebrow" id="leceye"></div><h2>'+esc(l.title)+'</h2><div class="bar" style="max-width:360px;margin:8px 0 10px"><i id="lecbar" style="width:'+s.pct+'%"></i></div>'
+ +'<div class="pill-row"><button class="btn lecstat" id="lecstat"></button></div>'
+ +(l.rec?'<p class="recline">'+MIC+l.rec+'</p>':'')
+ +'<div class="toc">'+l.sections.map((sec,i)=>'<a href="#lectures" data-jump="'+sec.id+'">'+dot(sst(sec.id),'data-secdot="'+sec.id+'"')+'<span>'+(i+1)+'. '+esc(sec.title)+'</span></a>').join('')+'</div>'
+ +l.sections.map((sec,i)=>'<section class="sec" id="'+sec.id+'"><h3>'+dot(sst(sec.id),'data-secdot="'+sec.id+'"')+(i+1)+'. '+esc(sec.title)+'</h3>'+enrich(sec.body)+'<div class="secend" data-secend="'+sec.id+'"></div></section>').join('')
+ +'<section class="sec closing"><h3>Taking stock</h3>'+enrich(typeof SUMMARIES!=='undefined'&&SUMMARIES[l.id]||'')+'</section>'
+ +'<div class="pill-row" style="margin-top:22px"><button class="btn" data-toggle="lecdefs">Definitions in this lecture ('+l.defs.length+')</button><button class="btn" data-toggle="lecasked">Asked before in this lecture ('+askedQ.length+')</button></div>'
+ +'<div id="lecdefs" class="panel" hidden><div class="defs">'+l.defs.map(d=>{const e=DEFS[norm(d.t)];return '<div class="def"><b>'+d.t+'</b><div>'+d.d+(e&&e.sec?'<div class="src"><a href="#lectures" data-jumpdef="'+e.anchor+'" data-sec="'+e.sec+'">↗ where it is introduced</a></div>':'')+'</div></div>'}).join('')+'</div></div>'
+ +'<div id="lecasked" class="panel" hidden>'+(askedQ.length?askedQ.map(q=>{const st=secTitle(qsec(q));return '<div class="bankrow"><span class="ref tag '+q.src[0].k+'">'+esc(q.src[0].r)+'</span><span class="q">'+q.q+'</span><a class="btn small" href="#lectures" data-jump="'+qsec(q)+'" title="'+(st?esc(st.s.title):'')+'">Go to part</a><a class="btn small" href="#quiz" data-practice="'+q.id+'">Practise</a></div>'}).join(''):'<p class="hint">No exam or homework question draws on this lecture.</p>')+'</div>'
+ +'<div class="pill-row" style="margin-top:22px"><a class="btn primary" href="#quiz" data-quizlec="'+l.id+'">Quiz on lecture '+l.num+' ('+nq.length+' questions)</a>'+(LECTURES[LECTURES.indexOf(l)+1]?'<button class="btn" data-lec="'+LECTURES[LECTURES.indexOf(l)+1].id+'">Next: lecture '+LECTURES[LECTURES.indexOf(l)+1].num+'</button>':'')+'</div>'
+ +'<div class="secnav" id="secnav"><div class="lines">'+l.sections.map((sec,i)=>'<i data-line="'+sec.id+'"></i>').join('')+'</div><div class="secpanel"><div class="eyebrow">Lecture '+l.num+'</div>'+l.sections.map((sec,i)=>'<a href="#lectures" data-jump="'+sec.id+'" data-navsec="'+sec.id+'">'+dot(sst(sec.id),'data-navdot="'+sec.id+'"')+'<span>'+(i+1)+'. '+esc(sec.title)+'</span></a>').join('')+'</div></div>';
+ refreshStatus();
+ typeset(art).then(()=>MARKS.apply(art));mountWidgets(art);
+ // scroll tracking: a section counts as read once its end has been reached
+ if(secObs)secObs.disconnect();
+ secObs=new IntersectionObserver(en=>{en.forEach(e=>{if(e.target.classList.contains('sec')){e.target.dataset.vis=e.isIntersecting?'1':''}});
+  const vis=[...art.querySelectorAll('section.sec')].find(x=>x.dataset.vis);if(vis){art.querySelectorAll('.secnav [data-navsec],.secnav [data-line]').forEach(x=>x.classList.toggle('cur',(x.dataset.navsec||x.dataset.line)===vis.id))}},{threshold:0});
+ art.querySelectorAll('section.sec').forEach(x=>secObs.observe(x));checkRead();
+}
+// ---------- definitions ----------
+function definitions(){
+ view.innerHTML='<div class="eyebrow">Reference</div><h2>Definitions</h2><p class="lead">Every term introduced in the lectures, grouped by lecture. Terms shown in <dfn>teal</dfn> inside the lecture text are listed here.</p><input type="search" id="defsearch" placeholder="'+esc(COURSE.defSearchHint||'Filter terms')+'" style="width:100%;max-width:420px;margin:6px 0 16px"><div id="deflist"></div>';
+ const list=document.getElementById('deflist');
+ function draw(f){f=(f||'').toLowerCase();list.innerHTML=LECTURES.map(l=>{const ds=l.defs.filter(d=>!f||(d.t+' '+d.d).toLowerCase().includes(f));if(!ds.length)return'';return '<h3>Lecture '+l.num+' · '+esc(l.short)+'</h3><div class="defs">'+ds.map(d=>{const e=DEFS[norm(d.t)];return '<div class="def"><b>'+d.t+'</b><div>'+d.d+'<div class="src">L'+l.num+(e&&e.sec?' · <a href="#lectures" data-jumpdef="'+e.anchor+'" data-sec="'+e.sec+'">↗ where it is introduced</a>':'')+'</div></div></div>'}).join('')+'</div>'}).join('')||'<p class="hint">No term matches.</p>';typeset(list)}
+ draw('');
+ document.getElementById('defsearch').addEventListener('input',e=>draw(e.target.value));
+}
+
+// ---------- quiz ----------
+let run=null; // {ids:[], i, answered:{id:'ok'|'bad'}}
+let pendingLec='all',pendingSingle=null;
+function quiz(){
+ if(pendingSingle){startRun([pendingSingle]);pendingSingle=null;return}
+ if(run&&run.ids.length)return renderQ();
+ const opts='<option value="all">All lectures</option>'+LECTURES.map(l=>'<option value="'+l.id+'"'+(pendingLec===l.id?' selected':'')+'>'+l.num+'. '+esc(l.short)+'</option>').join('');
+ view.innerHTML='<div class="eyebrow">Practice</div><h2>Quiz</h2><p class="lead">Multiple choice is graded automatically; worked questions show the solution and you grade yourself. Every question carries a tag saying where it was asked before.</p>'
+ +'<div class="panel"><div class="qsetup"><label>Lecture<select id="qlec">'+opts+'</select></label><label>Which questions<select id="qfilter"><option value="all">All</option>'+(Object.values(SOURCES).some(s=>s.asked)?'<option value="asked">'+esc(COURSE.askedFilter||'Asked before only')+'</option>':'')+Object.entries(SOURCES).filter(([k,s])=>s.filter&&Q.some(q=>q.src.some(x=>x.k===k))).map(([k,s])=>'<option value="src:'+k+'">'+esc(s.filter)+'</option>').join('')+'<option value="new">Not yet mastered</option><option value="bad">Missed last time</option></select></label><label>Order<select id="qorder"><option value="seq">In order</option><option value="rnd">Shuffled</option></select></label><button class="btn primary" data-act="start">Start</button></div><p class="hint" id="qcount" style="margin:10px 0 0"></p></div>';
+ pendingLec='all';
+ const upd=()=>{document.getElementById('qcount').textContent=pool().length+' questions selected'};
+ ['qlec','qfilter','qorder'].forEach(id=>document.getElementById(id).addEventListener('change',upd));upd();
+}
+function pool(){const lec=document.getElementById('qlec').value,f=document.getElementById('qfilter').value,o=document.getElementById('qorder').value;
+ let ids=Q.filter(q=>lec==='all'||q.lec===lec).filter(q=>f==='all'||(f==='asked'&&asked(q))||(f.startsWith('src:')&&q.src.some(s=>s.k===f.slice(4)))||(f==='new'&&status(q)!=='ok')||(f==='bad'&&status(q)==='bad')).map(q=>q.id);
+ if(o==='rnd')ids=ids.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);return ids}
+function startRun(ids){if(!ids.length){toast('No questions match');return}run={ids,i:0,answered:{}};renderQ()}
+function renderQ(){
+ const q=qById[run.ids[run.i]];const done=run.answered[q.id];
+ let body='<div class="qcard"><div class="qhead"><span class="num hint">Question '+(run.i+1)+' / '+run.ids.length+' · Lecture '+byId[q.lec].num+'</span>'+tags(q)+'</div><div class="qprompt">'+q.q+'</div>';
+ if(q.type==='mc'){run.perm=run.perm||{};if(!run.perm[q.id])run.perm[q.id]=q.o.map((_,k)=>[Math.random(),k]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+  body+='<div class="opts">'+run.perm[q.id].map(k=>'<button class="opt'+(done?(k===q.ans?' right':(run.pick===k?' wrong':'')):'')+'" data-pick="'+k+'" '+(done?'disabled':'')+'>'+q.o[k]+'</button>').join('')+'</div>';
+  if(done)body+='<div class="verdict '+done+'">'+(done==='ok'?'Correct.':'Not quite.')+'</div><div class="explain">'+q.a+'</div>'}
+ else{body+=run.reveal?'<div class="explain"><b>Solution</b><br>'+q.a+'</div>'+(done?'<div class="verdict '+done+'">'+(done==='ok'?'Marked as understood.':'Marked to revisit.')+'</div>':'<div class="qfoot"><span class="hint">Did you get it?</span><button class="btn small" data-self="ok">Yes, I had it</button><button class="btn small" data-self="bad">Not yet</button></div>'):'<div class="qfoot"><button class="btn primary" data-act="reveal">Show solution</button><span class="hint">Work it out on paper first.</span></div>'}
+ body+='<div class="qfoot">'+(run.i>0?'<button class="btn small" data-act="prev">Previous</button>':'')+(run.i<run.ids.length-1?'<button class="btn small '+(done?'primary':'')+'" data-act="next">Next</button>':'<button class="btn small primary" data-act="finish">Finish</button>')+'<button class="btn small ghost" data-act="quit">Quit run</button></div></div>';
+ view.innerHTML='<div class="eyebrow">Practice</div><h2>Quiz</h2>'+body;typeset(view);
+}
+function record(q,res){const s=S.quiz[q.id]||{attempts:0,correct:0};s.attempts++;if(res==='ok')s.correct++;s.last=res;s.at=Date.now();S.quiz[q.id]=s;save()}
+function finish(){const n=run.ids.length,ok=run.ids.filter(id=>run.answered[id]==='ok').length,miss=run.ids.filter(id=>run.answered[id]==='bad');
+ view.innerHTML='<div class="eyebrow">Practice</div><h2>Run finished</h2><div class="panel"><div class="stat">'+ring(pct(ok,n))+'<div><div style="font-size:1.3rem;font-weight:600">'+ok+' of '+n+' correct</div><div class="hint">'+(n-ok-miss.length)+' left unanswered</div></div></div>'+(miss.length?'<h3>To revisit</h3><div class="weak">'+miss.map(id=>{const q=qById[id];return '<a href="#quiz" data-practice="'+id+'">'+tags(q)+'<span>'+shortQ(q)+'</span></a>'}).join('')+'</div>':'')+'<div class="pill-row" style="margin-top:16px"><button class="btn primary" data-act="again">New run</button><a class="btn" href="#dashboard">Dashboard</a></div></div>';run=null;}
+
+// ---------- exam bank ----------
+function exam(){
+ const groups=Object.entries(SOURCES).filter(([k,s])=>s.bank&&Q.some(q=>q.src[0].k===k)).map(([k,s])=>[k,s.bank+(s.bankCount?' ('+Q.filter(q=>q.src[0].k===k).length+(Q.filter(q=>q.src[0].k===k).length===1?' question)':' questions)'):'')]);
+ view.innerHTML='<div class="eyebrow">Question bank</div><h2>Exam bank</h2><p class="lead">Every question with where it was asked and your latest result. Practise one at a time, or start a filtered run from the Quiz tab.</p>'
+ +groups.map(([k,n])=>{const qs=Q.filter(q=>q.src[0].k===k);const m=qs.filter(q=>status(q)==='ok').length;return '<div class="panel" style="margin-top:14px"><div class="qhead"><h3 style="margin:0">'+n+'</h3><span class="num hint">'+m+'/'+qs.length+' mastered</span></div><div class="bar" style="margin:8px 0 6px"><i style="width:'+pct(m,qs.length)+'%"></i></div>'+qs.map(q=>'<div class="bankrow"><span class="ref tag '+k+'">'+esc(q.src[0].r)+'</span><span class="q">'+q.q+'</span>'+statusTag(q)+'<a class="btn small" href="#quiz" data-practice="'+q.id+'">Practise</a></div>').join('')+'</div>'}).join('');
+}
+
+// ---------- events ----------
+view.addEventListener('click',e=>{
+ const ln=e.target.closest('.secnav .lines');if(ln){ln.parentNode.classList.toggle('open');return}
+ const fg=e.target.closest('figure.slide[data-fig]');if(fg){openFig(fg);return}
+ const dfn=e.target.closest('dfn.term');if(dfn){e.preventDefault();openTerm(dfn);return}
+ const t=e.target.closest('[data-sdot],[data-secdot],[data-navdot],[data-ldot],#lecstat,[data-lec],[data-jump],[data-golec],[data-quizlec],[data-practice],[data-pick],[data-self],[data-act],[data-toggle],[data-jumpdef]');if(!t)return;
+ if(t.dataset.toggle){const p=document.getElementById(t.dataset.toggle);p.hidden=!p.hidden;if(!p.hidden){typeset(p);p.scrollIntoView({behavior:'smooth',block:'start'})}return}
+ if(t.dataset.jumpdef){e.preventDefault();jumpTo(t.dataset.jumpdef,t.dataset.sec);return}
+ if(t.dataset.lec){e.preventDefault();renderLecture(byId[t.dataset.lec],{push:true});window.scrollTo({top:0});return}
+ if(t.dataset.sdot||t.dataset.secdot||t.dataset.navdot){e.preventDefault();e.stopPropagation();const id=t.dataset.sdot||t.dataset.secdot||t.dataset.navdot;setSec(id,cyc(sst(id)));refreshStatus();return}
+ if(t.dataset.ldot){e.preventDefault();e.stopPropagation();const l=byId[t.dataset.ldot];setLec(l,cyc(lst(l)));refreshStatus();return}
+ if(t.id==='lecstat'){const l=byId[S.lastLec];setLec(l,cyc(lst(l)));refreshStatus();toast('Lecture marked as '+lst(l));return}
+ if(t.dataset.jump){e.preventDefault();const el=document.getElementById(t.dataset.jump);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(t.dataset.golec){S.lastLec=t.dataset.golec;save();return}
+ if(t.dataset.quizlec){pendingLec=t.dataset.quizlec;run=null;return}
+ if(t.dataset.practice){pendingSingle=t.dataset.practice;run=null;if(location.hash==='#quiz')quiz();return}
+ if(t.dataset.pick!==undefined){const q=qById[run.ids[run.i]];if(run.answered[q.id])return;const k=+t.dataset.pick;run.pick=k;const res=k===q.ans?'ok':'bad';run.answered[q.id]=res;record(q,res);renderQ();return}
+ if(t.dataset.self){const q=qById[run.ids[run.i]];run.answered[q.id]=t.dataset.self;record(q,t.dataset.self);renderQ();return}
+ const a=t.dataset.act;
+ if(a==='start')startRun(pool());
+ else if(a==='reveal'){run.reveal=true;renderQ()}
+ else if(a==='next'){run.i++;run.reveal=false;run.pick=null;renderQ();window.scrollTo({top:0})}
+ else if(a==='prev'){run.i--;run.reveal=!!run.answered[run.ids[run.i]];run.pick=null;renderQ()}
+ else if(a==='finish')finish();
+ else if(a==='quit'){run=null;quiz();typeset(view)}
+ else if(a==='again'){run=null;quiz();typeset(view)}
+ else if(a==='export'){const io=document.getElementById('io');io.innerHTML='<textarea class="io" id="ioexp" readonly>'+esc(JSON.stringify(S))+'</textarea><div class="pill-row"><button class="btn small" data-act="copy">Copy</button></div>'}
+ else if(a==='copy'){const ta=document.getElementById('ioexp');const txt=ta.value;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied')).catch(()=>{ta.focus();ta.select();toast('Select and copy the text')})}
+ else if(a==='import'){const io=document.getElementById('io');io.innerHTML='<textarea class="io" id="ioimp" placeholder="Paste progress JSON here"></textarea><div class="pill-row"><button class="btn small primary" data-act="load">Load</button></div>'}
+ else if(a==='load'){try{const o=JSON.parse(document.getElementById('ioimp').value);if(!o.read||!o.quiz)throw 0;S=Object.assign({read:{},quiz:{},lastLec:L0},o);migrate();save();toast('Progress loaded');dashboard();typeset(view)}catch(x){toast('That text is not valid progress data')}}
+ else if(a==='reset'){const io=document.getElementById('io');io.innerHTML='<p class="hint">This clears all reading marks and quiz results in this browser.</p><div class="pill-row"><button class="btn small" data-act="reset-yes" style="border-color:var(--bad);color:var(--bad)">Yes, reset everything</button><button class="btn small ghost" data-act="reset-no">Keep</button></div>'}
+ else if(a==='reset-yes'){S={read:{},quiz:{},lastLec:L0};migrate();save();toast('Progress reset');dashboard();typeset(view)}
+ else if(a==='reset-no'){document.getElementById('io').innerHTML=''}
+});
+route();
+})();
+</script>
